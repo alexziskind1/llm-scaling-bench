@@ -1,286 +1,192 @@
-# LLM Benchmark Suite
+# LLM Scaling Benchmark Suite
 
-This benchmark suite allows you to test how different LLM providers handle concurrent requests and measure their throughput scaling characteristics.
+A comprehensive benchmarking tool to test how different LLM providers handle concurrent requests and measure their throughput scaling characteristics.
 
 ## 🚀 Quick Start
 
-**1. Install dependencies:**
 ```bash
+# 1. Install dependencies
 pip install -r requirements.txt
-# or with uv:
-uv pip install -r requirements.txt
-```
 
-**2. Run a benchmark:**
-```bash
-# TTLLM/TensorRT-LLM (fastest)
-python benchmarks/bench_ttllm_scaling.py
-
-# Ollama
+# 2. Run a benchmark
 python benchmarks/bench_ollama_scaling.py
 
-# Docker/Local server
-python benchmarks/bench_concurrent_scaling.py
-```
-
-**3. Generate interactive plots:**
-```bash
-# Plot latest results
+# 3. Generate interactive plots
 python scripts/plot_results.py --latest
 
-# Compare all benchmarks
-python scripts/plot_results.py --compare
-
-# Provider performance comparison
-python scripts/plot_results.py --provider-comparison
+# 4. View results in browser
+open results/*.html
 ```
 
-**4. View results:**
-- Open `results/*.html` files in your browser for interactive charts
-- CSV data files are saved in `results/` directory
+## Supported Providers
+
+- **TensorRT-LLM (TTLLM)** - High-performance inference
+- **Ollama** - Local LLM serving
+- **Docker/Local servers** - Custom deployments
+- **LMStudio** - Desktop LLM interface
 
 ## Project Structure
 
 ```
-bench_ubuntu_box/
+llm_scaling_bench/
 ├── config/
-│   └── benchmark_config.py          # Central configuration
+│   └── benchmark_config.py     # Central configuration
 ├── benchmarks/
-│   ├── bench_concurrent_scaling.py  # Docker/Local server benchmark
-│   ├── bench_ollama_scaling.py      # Ollama benchmark
-│   ├── bench_template.py            # Template for new benchmarks
-│   └── bench_*.py                   # Original benchmark files
+│   ├── bench_ttllm_scaling.py  # TensorRT-LLM benchmark
+│   ├── bench_ollama_scaling.py # Ollama benchmark
+│   └── bench_*.py              # Other provider benchmarks
 ├── scripts/
-│   ├── plot_results.py              # Generate graphs from results
-│   ├── run_all_benchmarks.py        # Run multiple benchmarks
-│   └── create_benchmark.py          # Create new benchmark scripts
-├── results/                         # CSV output files
-├── requirements.txt                 # Python dependencies
-└── run_benchmark.sh                 # Quick start script
+│   ├── plot_results.py         # Generate interactive charts
+│   ├── run_all_benchmarks.py   # Run multiple providers
+│   └── create_benchmark.py     # Create new benchmarks
+├── results/                    # CSV output and charts
+└── requirements.txt
 ```
 
 ## Configuration
 
-### Central Configuration
+### Global Settings
 
-All benchmark scripts now use a central configuration file `config/benchmark_config.py`. To change the concurrent user counts tested across all benchmarks, edit this file:
+Edit `config/benchmark_config.py` to change concurrent user counts for all benchmarks:
 
 ```python
-# Current default: 1, 2, 3, 4, 5, 6, 7, 8, 16, 32, 64, 128, 256
+# Default: 1, 2, 3, 4, 5, 6, 7, 8, 16, 32, 64, 128, 256
 CONCURRENT_USER_COUNTS = list(range(1, 8)) + [2**i for i in range(3, 9)]
 ```
 
-Alternative configurations are provided as comments in the file:
-- Powers of 2 only: `[2**i for i in range(9)]`
-- Linear progression: `list(range(1, 51, 5))`
-- Custom values: `[1, 2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256]`
+### Provider Settings
 
-### Provider-Specific Configuration
-
-Edit the configuration variables at the top of each benchmark script:
+Each benchmark script has configuration at the top:
 
 ```python
-API_URL = "http://localhost:12434/engines/llama.cpp/v1/chat/completions"
-API_KEY = "test"
-MODEL_NAME = "ai/qwen2.5"
-PROMPT = "write me a 1000 word essay on AI"
+API_URL = "http://localhost:11434/v1/chat/completions"
+MODEL_NAME = "llama3.2:3b"
+PROMPT = "Write a brief essay about artificial intelligence"
 MAX_TOKENS_PER_RESPONSE = 512
-```
-
-## 🔧 Provider Setup
-
-**Before running benchmarks, ensure your LLM provider is running:**
-
-```bash
-# TTLLM/TensorRT-LLM (edit IP in bench_ttllm_scaling.py)
-# Default: http://192.168.1.188:8000/v1/chat/completions
-
-# Ollama (make sure it's running)
-ollama serve
-# Test: curl http://localhost:11434/api/generate
-
-# Docker/Local server (edit URL in bench_concurrent_scaling.py)
-# Default: http://localhost:8000/v1/chat/completions
-
-# LMStudio (start local server)
-# Default: http://localhost:1234/v1/chat/completions
 ```
 
 ## Running Benchmarks
 
 ### Single Provider
 
-Run the concurrent scaling benchmark for Docker/Local:
 ```bash
-python benchmarks/bench_concurrent_scaling.py
-```
+# TensorRT-LLM
+python benchmarks/bench_ttllm_scaling.py
 
-Run the concurrent scaling benchmark for Ollama:
-```bash
+# Ollama
 python benchmarks/bench_ollama_scaling.py
+
+# Docker/Local
+python benchmarks/bench_concurrent_scaling.py
 ```
 
 ### Multiple Providers
 
-Run benchmarks across all available providers:
 ```bash
+# All available providers
 python scripts/run_all_benchmarks.py --all
-```
 
-Run benchmarks for specific providers:
-```bash
-python scripts/run_all_benchmarks.py --providers docker ollama
-```
+# Specific providers
+python scripts/run_all_benchmarks.py --providers ollama ttllm
 
-Interactive provider selection:
-```bash
+# Interactive selection
 python scripts/run_all_benchmarks.py
 ```
 
-All scripts will test with the concurrent user counts defined in `config/benchmark_config.py` (default: 1, 2, 3, 4, 5, 6, 7, 8, 16, 32, 64, 128, 256)
-
-### Creating New Provider Benchmarks
-
-Use the helper script to create benchmarks for new providers:
+### Creating New Benchmarks
 
 ```bash
-# Create a new benchmark for LMStudio
-python scripts/create_benchmark.py lmstudio "http://localhost:1234/v1/chat/completions" "your-model-name"
-
-# Create a new benchmark for OpenAI
-python scripts/create_benchmark.py openai "https://api.openai.com/v1/chat/completions" "gpt-4" --api-key "your-api-key"
+# Generate benchmark for new provider
+python scripts/create_benchmark.py lmstudio "http://localhost:1234/v1/chat/completions" "model-name"
 ```
 
-### Output
+## Visualization
 
-The benchmarks will:
-1. Print progress information to the console
-2. Save detailed results to timestamped CSV files in the `results/` directory:
-   - Docker/Local: `results/benchmark_results_YYYYMMDD_HHMMSS.csv`
-   - Ollama: `results/ollama_benchmark_results_YYYYMMDD_HHMMSS.csv`
-3. Display a summary table at the end
+### Generate Charts
 
-When using `scripts/run_all_benchmarks.py`, it will also generate comparison plots automatically.
-
-### CSV Output Format
-
-The CSV file contains the following columns:
-- `concurrent_users` - Number of concurrent requests
-- `total_time` - Total time for all requests to complete
-- `successful_requests` - Number of successful requests
-- `failed_requests` - Number of failed requests
-- `total_tokens` - Total tokens generated across all requests
-- `tokens_per_second` - Throughput in tokens per second
-- `requests_per_second` - Request rate
-- `success_rate` - Percentage of successful requests
-
-## 📊 Interactive Plotting with Plotly
-
-### Plot Latest Results
 ```bash
+# Latest results
 python scripts/plot_results.py --latest
-```
 
-### Plot Specific File
-```bash
-python scripts/plot_results.py --csv results/benchmark_results_20250723_143022.csv
-```
+# Specific file
+python scripts/plot_results.py --csv results/benchmark_results_20250826_120000.csv
 
-### Compare Multiple Runs
-```bash
+# Compare multiple runs
 python scripts/plot_results.py --compare
-```
 
-### Provider Performance Comparison
-```bash
+# Provider comparison
 python scripts/plot_results.py --provider-comparison
 ```
 
-**Output Files:**
-- `*.html` - Interactive charts (open in browser)
-- `*.png` - Static images for presentations
+### Chart Features
 
-The plotting generates **interactive charts** with:
-1. **Hover tooltips** - See exact values on mouse hover
-2. **Zoom & Pan** - Explore specific ranges in detail  
-3. **Linear axes** - Better visualization of scaling patterns
-4. **Multi-provider comparison** - Compare different LLM providers
-5. **2x2 subplot layout** - Tokens/sec, Requests/sec, Response time, Success rate
+- **Interactive Plotly charts** with hover tooltips and zoom
+- **Four-panel dashboard**: Tokens/sec, Requests/sec, Response time, Success rate
+- **Multi-provider comparisons** to evaluate performance differences
+- **HTML and PNG outputs** for sharing and presentations
 
-**Chart Types:**
-- Single benchmark analysis (4-panel dashboard)
-- Multi-benchmark timeline comparison  
-- Cross-provider performance analysis
+## Output Format
 
-## Customizing Concurrency Levels
+Results are saved as CSV files with these columns:
 
-To test different concurrency levels, modify the `CONCURRENT_USER_COUNTS` list in `config/benchmark_config.py`:
+| Column | Description |
+|--------|-------------|
+| `concurrent_users` | Number of concurrent requests |
+| `total_time` | Total time for all requests |
+| `successful_requests` | Number of successful requests |
+| `failed_requests` | Number of failed requests |
+| `total_tokens` | Total tokens generated |
+| `tokens_per_second` | Throughput metric |
+| `requests_per_second` | Request rate |
+| `success_rate` | Percentage of successful requests |
 
-```python
-# Default: 1, 2, 3, 4, 5, 6, 7, 8, 16, 32, 64, 128, 256
-CONCURRENT_USER_COUNTS = list(range(1, 8)) + [2**i for i in range(3, 9)]
+## Provider Setup
 
-# Powers of 2 only: 1, 2, 4, 8, 16, 32, 64, 128, 256
-CONCURRENT_USER_COUNTS = [2**i for i in range(9)]
-
-# Custom example: specific values
-CONCURRENT_USER_COUNTS = [1, 5, 10, 20, 50, 100]
-
-# Custom example: linear progression
-CONCURRENT_USER_COUNTS = list(range(1, 51, 5))  # 1, 6, 11, 16, ..., 46
+### TensorRT-LLM
+```bash
+# Update IP in bench_ttllm_scaling.py
+# Default: http://192.168.1.188:8000/v1/chat/completions
 ```
 
-This change will affect all benchmark scripts automatically.
+### Ollama
+```bash
+ollama serve
+# Test: curl http://localhost:11434/api/generate
+```
 
-## Tips for Different Providers
+### Docker/Local
+```bash
+# Start your server on http://localhost:8000/v1/chat/completions
+```
 
-### For Docker/Local Servers
-- Start with lower concurrency levels if your server has limited resources
-- Monitor CPU and memory usage during tests
-- Consider the timeout settings based on your model's response time
-
-### For Cloud APIs
-- Be aware of rate limits and adjust concurrent user counts accordingly
-- Consider adding longer delays between benchmark runs
-- Monitor your API usage/costs
-
-### For Production Testing
-- Run benchmarks during off-peak hours
-- Start with lower concurrency and gradually increase
-- Monitor server logs for errors or resource exhaustion
+### LMStudio
+```bash
+# Start local server in LMStudio
+# Default: http://localhost:1234/v1/chat/completions
+```
 
 ## Troubleshooting
 
-### Connection Errors
-- Verify the API_URL is correct and the server is running
-- Check if the server supports the expected number of concurrent connections
-- Adjust the timeout settings if requests are timing out
+### Common Issues
 
-### Memory Issues
-- Reduce the maximum concurrent users if you encounter memory errors
-- Increase the delay between benchmark runs
-- Consider running benchmarks in smaller batches
+**Connection Errors**
+- Verify API URL and server status
+- Check concurrent connection limits
+- Adjust timeout settings
 
-### Inconsistent Results
-- Run multiple benchmark sessions and compare results
+**Memory Issues**
+- Reduce maximum concurrent users
+- Increase delays between runs
+- Monitor system resources
 
----
+**Inconsistent Results**
+- Run multiple sessions for comparison
+- Check for background processes
+- Ensure stable network conditions
 
-## 📝 Summary Workflow
+### Best Practices
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Start your LLM provider (Ollama, TTLLM, etc.)
-
-# 3. Run benchmark
-python benchmarks/bench_ttllm_scaling.py
-
-# 4. Generate interactive plots  
-python scripts/plot_results.py --latest
-
-# 5. Open results/*.html in browser
-```
-
-**Key Files:**
+- Start with lower concurrency for resource-limited servers
+- Monitor API rate limits for cloud providers
+- Run benchmarks during off-peak hours for production testing
+- Save results with descriptive timestamps
