@@ -284,18 +284,3 @@ python scripts/plot_results.py --latest
 ```
 
 **Key Files:**
-- `config/benchmark_config.py` - Adjust concurrency levels
-- `results/*.csv` - Raw benchmark data
-- `results/*.html` - Interactive charts
-- Ensure the server is in a consistent state between runs
-- Consider warm-up runs before collecting data
-
-## Example Workflow
-
-1. Configure your API endpoint in the appropriate benchmark file
-2. Run the benchmark: `python benchmarks/bench_concurrent_scaling.py`
-3. Generate plots: `python scripts/plot_results.py --latest`
-4. Repeat with different configurations or providers
-5. Compare results: `python scripts/plot_results.py --compare`
-
-This will give you a comprehensive view of how your LLM provider scales with concurrent load.
