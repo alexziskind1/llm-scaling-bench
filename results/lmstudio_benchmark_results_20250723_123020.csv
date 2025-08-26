@@ -1,0 +1,14 @@
+concurrent_users,total_time,successful_requests,failed_requests,total_tokens,tokens_per_second,requests_per_second,success_rate
+1,0,0,1,0,0,0,0
+2,0,0,2,0,0,0,0
+3,0,0,3,0,0,0,0
+4,0,0,4,0,0,0,0
+5,0,0,5,0,0,0,0
+6,0,0,6,0,0,0,0
+7,0,0,7,0,0,0,0
+8,0,0,8,0,0,0,0
+16,0,0,16,0,0,0,0
+32,0,0,32,0,0,0,0
+64,0,0,64,0,0,0,0
+128,0,0,128,0,0,0,0
+256,0,0,256,0,0,0,0

@@ -1,0 +1,6 @@
+concurrent_users,total_time,successful_requests,failed_requests,total_tokens,tokens_per_second,requests_per_second,success_rate
+1,0.04415321350097656,0,1,0,0.0,0.0,0.0
+2,0.014935016632080078,0,2,0,0.0,0.0,0.0
+3,0.014312982559204102,0,3,0,0.0,0.0,0.0
+4,0.019398212432861328,0,4,0,0.0,0.0,0.0
+5,0.019114017486572266,0,5,0,0.0,0.0,0.0
